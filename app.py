@@ -19,28 +19,38 @@ st.set_page_config(
     page_icon="❤️"
 )
 
-# --- CARICAMENTO DELLE RISORSE ---
+# --- CARICAMENTO DEL MODELLO (CON CACHING PER EFFICIENZA) ---
 @st.cache_resource
 def load_resources():
+    """Carica il modello XGBoost e crea l'explainer SHAP."""
     try:
         model = xgb.Booster()
         model.load_model('ML_CDS_final_model.json')
         explainer = shap.TreeExplainer(model)
-        df_ref = pd.read_excel('df_final.xlsx')
-        return model, explainer, df_ref
+        return model, explainer
     except Exception as e:
-        st.error(f"Errore critico nel caricamento delle risorse: {e}")
-        return None, None, None
+        st.error(f"Errore critico nel caricamento del modello: {e}")
+        st.error("Assicurarsi che il file 'ML_CDS_final_model.json' sia presente nel repository GitHub.")
+        return None, None
 
-model, explainer, df_final = load_resources()
+model, explainer = load_resources()
+
+# --- COSTANTI DELLO STUDIO (Valori dei quartili dal cohort di derivazione) ---
+# Questi valori sono usati per classificare il rischio di un nuovo paziente.
+QUARTILE_25_PERCENT = 0.5557
+MEDIAN_SCORE = 0.9485
+QUARTILE_75_PERCENT = 1.7101
+
 
 # --- TITOLO E DESCRIZIONE ---
 st.title('ML-CDS: A Machine Learning-Based Cardiac Damage Score for Aortic Stenosis')
 st.markdown("This tool provides a personalized, continuous risk score for patients with moderate-to-severe aortic stenosis by integrating clinical and multi-chamber echocardiographic data.")
 st.markdown("---")
 
-# --- LAYOUT A COLONNE ---
+
+# --- LAYOUT A COLONNE PER INPUT E OUTPUT ---
 input_col, output_col = st.columns([2, 1])
+
 
 # --- COLONNA DEGLI INPUT ---
 with input_col:
@@ -48,7 +58,7 @@ with input_col:
 
     with st.expander("**Patient-related factors**", expanded=True):
         col_age, col_sex, col_nyha = st.columns(3)
-        age = col_age.number_input('Age (years)', 18, 110, 75)
+        age = col_age.number_input('Age (years)', min_value=18, max_value=110, value=75, step=1)
         sex = col_sex.selectbox('Biological Sex', ['Female', 'Male'])
         nyha = col_nyha.selectbox('NYHA Class', [1, 2, 3, 4])
         
@@ -66,7 +76,6 @@ with input_col:
         svi = c2.number_input("SVi (ml/m²)", 15, 70, 35)
         
         lavi = c3.number_input('LAVI (ml/m²)', 15, 100, 40)
-        # --- MODIFICA CHIAVE: Aggiunto PALS qui ---
         pals = c3.number_input('PALS (%)', 0.0, 50.0, 25.0, step=0.1, help="Peak Atrial Longitudinal Strain")
         
         st.subheader("Diastolic Function")
@@ -86,13 +95,14 @@ with input_col:
 # --- Pulsante di calcolo ---
 calculate_button = input_col.button('**Calculate Risk Score**', type="primary", use_container_width=True)
 
+
 # --- COLONNA DELL'OUTPUT ---
 with output_col:
     st.header("Prognostic Assessment")
     
     if calculate_button:
-        if model is not None and explainer is not None and df_final is not None:
-            # Crea il dizionario con TUTTI i dati dall'interfaccia
+        if model is not None and explainer is not None:
+            # Crea il dataframe di input per il modello
             input_data = {
                 'age': age, 'sex': 1 if sex == 'Male' else 0, 'nyha': nyha,
                 'ckd': 1 if ckd else 0, 'rhythm': 1 if rhythm else 0,
@@ -108,22 +118,22 @@ with output_col:
             expected_features_order = model.feature_names
             input_df = pd.DataFrame([input_data])[expected_features_order]
 
-            # ... (resto della logica di calcolo e visualizzazione, che rimane invariata) ...
             with st.spinner('Analyzing patient data...'):
                 dmatrix = xgb.DMatrix(input_df)
                 score = model.predict(dmatrix)[0]
                 shap_values = explainer(input_df)
 
+            # Visualizzazione dello Score e della Classe di Rischio
             st.subheader("ML-CDS Score")
             st.markdown(f"<div style='background-color:#F0F2F6; padding: 15px; border-radius: 10px; text-align: center;'><h1 style='color: #262730;'>{score:.3f}</h1></div>", unsafe_allow_html=True)
             
-            if score > df_final['ML_CDS'].quantile(0.75):
+            if score > QUARTILE_75_PERCENT:
                  risk_class = "High Risk"
                  st.error(f"**Risk Class:** {risk_class}", icon="🔴")
-            elif score > df_final['ML_CDS'].median():
+            elif score > MEDIAN_SCORE:
                  risk_class = "Medium-High Risk"
                  st.warning(f"**Risk Class:** {risk_class}", icon="🟠")
-            elif score > df_final['ML_CDS'].quantile(0.25):
+            elif score > QUARTILE_25_PERCENT:
                  risk_class = "Medium-Low Risk"
                  st.info(f"**Risk Class:** {risk_class}", icon="🟡")
             else:
@@ -131,6 +141,7 @@ with output_col:
                  st.success(f"**Risk Class:** {risk_class}", icon="🟢")
             st.caption("Risk class is determined by the score's quartile within the original study cohort.")
             
+            # Visualizzazione del grafico SHAP Waterfall
             st.subheader("Individual Risk Factor Analysis")
             fig, ax = plt.subplots(figsize=(8, 10))
             shap.plots.waterfall(shap_values[0], max_display=len(input_df.columns), show=False)
@@ -140,7 +151,8 @@ with output_col:
 
     else:
         st.info("Enter patient data and click the 'Calculate Risk Score' button to see the results.")
-        
+
+
 # --- DISCLAIMER LEGALE IN FONDO ALLA PAGINA ---
 st.markdown("---")
 st.subheader("Disclaimer")
