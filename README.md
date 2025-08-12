@@ -15,8 +15,8 @@ This application is intended as a companion tool for the research paper:
 
 -   **Personalized Risk Score**: Calculates a continuous prognostic score (`ML_CDS`) based on individual patient parameters.
 -   **Risk Stratification**: Classifies the patient into one of four risk quartiles (Low, Medium-Low, Medium-High, High) based on the derivation cohort.
--   **Explainable AI (XAI)**: Generates a SHAP waterfall plot to visualize how each individual feature contributes to the final risk score, providing transparent and clinically interpretable insights.
--   **Intuitive Interface**: A user-friendly web interface, inspired by clinical calculators like EuroSCORE II, allows for easy data entry and clear visualization of results.
+-   **Explainable AI (XAI)**: Generates a plot to visualize how each individual feature contributes to the final risk score, providing transparent and clinically interpretable insights.
+-   **Intuitive Interface**: A user-friendly web interface allows for easy data entry and clear visualization of results.
 
 ## 🚀 Live Application
 
