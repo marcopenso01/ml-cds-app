@@ -79,7 +79,7 @@ with input_col:
         pals = c3.number_input('PALS (%)', 0.0, 50.0, 25.0, step=0.1, help="Peak Atrial Longitudinal Strain")
         
         st.subheader("Diastolic Function")
-        ee_ratio = st.number_input("E/e' ratio", 4.0, 40.0, 12.0, step=0.1)
+        ee_ratio = st.number_input("E/e' ratio", 4.0, 50.0, 12.0, step=0.1)
 
         st.subheader("Right Ventricle & Pulmonary Circulation")
         c4, c5, c6 = st.columns(3)
@@ -162,3 +162,4 @@ st.markdown("""
 Istituto Auxologico Italiano provides this webpage and calculator “as is” and in good faith as a tool free for unrestricted online use by patients, clinicians, and researchers. The calculator must not be used for any commercial use. The user assumes all responsibility for use of the calculator. Istituto Auxologico Italiano accepts no liability whatsoever for any harm, direct or indirect, real or perceived, loss, or damage resulting from its use or misuse. This tool is intended for informational purposes only and does not constitute medical advice.
 </small>
 """, unsafe_allow_html=True)
+
