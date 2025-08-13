@@ -170,6 +170,8 @@ st.markdown("---")
 st.subheader("Disclaimer")
 st.markdown("""
 <small> The ML-CDS Risk Calculator is owned by **Istituto Auxologico Italiano**.
-# ... (il resto del testo del disclaimer rimane invariato) ...
+
+Istituto Auxologico Italiano provides this webpage and calculator “as is” and in good faith as a tool free for unrestricted online use by patients, clinicians, and researchers. The calculator must not be used for any commercial use. The user assumes all responsibility for use of the calculator. Istituto Auxologico Italiano accepts no liability whatsoever for any harm, direct or indirect, real or perceived, loss, or damage resulting from its use or misuse. This tool is intended for informational purposes only and does not constitute medical advice.
 </small>
 """, unsafe_allow_html=True)
+
