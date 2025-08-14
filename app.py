@@ -53,9 +53,9 @@ with st.expander("ℹ️ Click here to see the Risk Score Legend and Interpretat
     Patients are classified into four risk groups based on the score quartiles from the original study cohort, which allows for a standardized interpretation:
 
     - **<span style="color:green;">🟢 Low Risk</span>**: Score ≤ {QUARTILE_25_PERCENT}
-    - **<span style="color:darkgoldenrod;">🟡 Medium-Low Risk</span>**: Score > {QUARTILE_25_PERCENT} and ≤ {MEDIAN_SCORE}
-    - **<span style="color:orange;">🟠 Medium-High Risk</span>**: Score > {MEDIAN_SCORE} and ≤ {QUARTILE_75_PERCENT}
-    - **<span style="color:red;">🔴 High Risk</span>**: Score > {QUARTILE_75_PERCENT}
+    - **<span style="color:darkgoldenrod;">🟡 Intermediate Risk</span>**: Score > {QUARTILE_25_PERCENT} and ≤ {MEDIAN_SCORE}
+    - **<span style="color:orange;">🟠 High Risk</span>**: Score > {MEDIAN_SCORE} and ≤ {QUARTILE_75_PERCENT}
+    - **<span style="color:red;">🔴 Very-High Risk</span>**: Score > {QUARTILE_75_PERCENT}
 
     <small>_Note: A small change in an input parameter can sometimes shift the patient across a risk threshold (e.g., from 0.90 to 0.96), leading to a different risk classification. The waterfall plot below helps explain exactly why this happens._</small>
     """, unsafe_allow_html=True)
@@ -140,16 +140,16 @@ with output_col:
             col1.metric(label="Calculated ML-CDS Score", value=f"{score:.3f}")
             
             if score > QUARTILE_75_PERCENT:
-                 risk_class = "High"
+                 risk_class = "Very-High Risk"
                  col2.error(f"**Risk Class:** {risk_class}", icon="🔴")
             elif score > MEDIAN_SCORE:
-                 risk_class = "Medium-High"
+                 risk_class = "High Risk"
                  col2.warning(f"**Risk Class:** {risk_class}", icon="🟠")
             elif score > QUARTILE_25_PERCENT:
-                 risk_class = "Medium-Low"
+                 risk_class = "Intermediate Risk"
                  col2.info(f"**Risk Class:** {risk_class}", icon="🟡")
             else:
-                 risk_class = "Low"
+                 risk_class = "Low Risk"
                  col2.success(f"**Risk Class:** {risk_class}", icon="🟢")
             
             st.markdown("---")
@@ -174,5 +174,6 @@ st.markdown("""
 Istituto Auxologico Italiano provides this webpage and calculator “as is” and in good faith as a tool free for unrestricted online use by patients, clinicians, and researchers. The calculator must not be used for any commercial use. The user assumes all responsibility for use of the calculator. Istituto Auxologico Italiano accepts no liability whatsoever for any harm, direct or indirect, real or perceived, loss, or damage resulting from its use or misuse. This tool is intended for informational purposes only and does not constitute medical advice.
 </small>
 """, unsafe_allow_html=True)
+
 
 
